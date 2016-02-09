@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Photon.SocketServer;
-using GameServer.LGNetwork;
+using Game.LGNetwork;
+using ExitGames.Logging.Log4Net;
+using ExitGames.Logging;
 
-namespace GameServer
+namespace Game
 {
     public class LobbyPeer : PeerBase
     {
+        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
         public LobbyPeer(InitRequest initRequest) : base(initRequest)
         {
             
@@ -20,14 +24,14 @@ namespace GameServer
             switch (operationRequest.OperationCode)
             {
                 case LGOperationCode.GetRooms:
-                    GameServerManager.Instance.SendAllRoomStatus(this, sendParameters);
+                    //GameServerManager.gameCore.SendAllRoomStatus(this, sendParameters);
                     break;
             }
         }
 
         protected override void OnDisconnect(PhotonHostRuntimeInterfaces.DisconnectReason reasonCode, string reasonDetail)
         {
-            throw new NotImplementedException();
+            log.DebugFormat("LobbyPeer Disconnected. Reason: {0}, {1}", reasonCode, reasonDetail);
         }
     }
 }

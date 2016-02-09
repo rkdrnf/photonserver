@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.Game
+namespace Game.Operations
 {
-    public struct PlayerKey
+    public class EventCode
     {
-        public int ID;
+        public const byte Chat = 2;
     }
 }

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.Game
+namespace Game
 {
-    public struct PlayerKey
+    public interface IServerManager
     {
-        public int ID;
     }
 }

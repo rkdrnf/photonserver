@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0C484B4D-52F0-47B0-A64C-0F008CCBBD32}</ProjectGuid>
+    <ProjectGuid>{216A10FE-6C82-43B3-8753-B3AA90AB0F3B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Game</RootNamespace>
-    <AssemblyName>GameServer</AssemblyName>
+    <RootNamespace>Barcarrats</RootNamespace>
+    <AssemblyName>BarcarratServer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -28,6 +28,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ExitGames.Logging.Log4Net">
@@ -52,29 +55,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Operations\ChatRequest.cs" />
-    <Compile Include="Operations\CommonOperationCode.cs" />
-    <Compile Include="GameCore.cs" />
-    <Compile Include="GamePeer.cs" />
-    <Compile Include="GameRoom.cs" />
-    <Compile Include="GameServer.cs" />
-    <Compile Include="GameServerManager.cs" />
-    <Compile Include="IGameCore.cs" />
-    <Compile Include="IServerManager.cs" />
-    <Compile Include="Operations\GetRoomsResponse.cs" />
-    <Compile Include="LGNetwork\LGParameterKey.cs" />
-    <Compile Include="LGNetwork\LGOperationCode.cs" />
-    <Compile Include="LobbyPeer.cs" />
-    <Compile Include="Operations\CommonParameterKey.cs" />
-    <Compile Include="Operations\EventCode.cs" />
-    <Compile Include="Operations\ExitRequest.cs" />
-    <Compile Include="Operations\JoinRequest.cs" />
-    <Compile Include="PeerInfo.cs" />
-    <Compile Include="Player\Player.cs" />
-    <Compile Include="Player\PlayerKey.cs" />
+    <Compile Include="BarcarratGameRoom.cs" />
+    <Compile Include="BarcarratGameCore.cs" />
+    <Compile Include="BarcarratPeer.cs" />
+    <Compile Include="BarcarratServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GameServer\GameServer.csproj">
+      <Project>{0c484b4d-52f0-47b0-a64c-0f008ccbbd32}</Project>
+      <Name>GameServer</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetDir)" "C:\Users\rkdrnf\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\deploy\BarcarratServer\bin\"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

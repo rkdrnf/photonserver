@@ -4,31 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Photon.SocketServer;
+using Game;
 
-namespace GameServer
-{
-    public class GameServer : ApplicationBase
+    public abstract class GameServer : ApplicationBase
     {
-        protected override PeerBase CreatePeer(InitRequest initRequest)
-        {
-            if (initRequest.LocalPort == 4520) //S2S Connection
-            {
-                return new LobbyPeer(initRequest);
-            }
-
-            return GamePeer(initRequest);
-        }
-
+        protected override abstract PeerBase CreatePeer(InitRequest initRequest);
 
         protected override void Setup()
         {
-            GameServerManager.Instance.Setup();
+            SetupServerManager();
+            GameServerManager.Setup();
         }
 
         protected override void TearDown()
         {
-            GameServerManager.Instance.TearDown();
+            GameServerManager.TearDown();
         }
 
+        protected abstract void SetupServerManager();
+
+
     }
-}

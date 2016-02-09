@@ -2,4 +2,7 @@ ChatServer/obj/*
 ChatServer/bin/
 GameServer/obj/
 GameServer/bin/
-
+LobbyServer/bin/
+BarcarratServer/bin/
+LobbyServer/obj/
+BarcarratServer/obj/

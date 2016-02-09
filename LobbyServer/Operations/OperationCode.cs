@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.Game
+namespace LobbyServer.Operations
 {
-    public struct PlayerKey
+    class OperationCode
     {
-        public int ID;
+        public const byte Refresh = 0;
     }
 }
