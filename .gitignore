@@ -1,0 +1,5 @@
+ChatServer/obj/*
+ChatServer/bin/
+GameServer/obj/
+GameServer/bin/
+
