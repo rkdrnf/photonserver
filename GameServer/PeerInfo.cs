@@ -8,10 +8,10 @@ namespace Game
 {
     public class PeerInfo
     {
-        public PeerInfo(GamePeer peer)
+        public PeerInfo(GamePeer peer, int roomID)
         {
             this.connectionID = peer.ConnectionId;
-            this.roomID = -1;
+            this.roomID = roomID;
         }
 
         public int connectionID;

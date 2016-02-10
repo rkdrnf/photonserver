@@ -7,6 +7,6 @@ namespace Game.Operations
     public class GetRoomsResponse
     {
         [DataMember(Code = (byte)GetRoomsParameterKey.RoomProperties, IsOptional = false)]
-        public List<Dictionary<byte, object>> RoomProperties { get; set; }
+        public byte[] RoomProperties { get; set; } //RoomPropertyList
     }
 }

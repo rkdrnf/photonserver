@@ -12,5 +12,6 @@ namespace Game.Operations
         public const byte Exit = 1;
         public const byte Chat = 2;
         public const byte GetRooms = 3;
+        public const byte ConfirmJoin = 4;
     }
 }

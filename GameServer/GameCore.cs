@@ -8,6 +8,8 @@ using Photon.SocketServer;
 using Game.LGNetwork;
 using System.Collections;
 using Game.Operations;
+using ProtoBuf;
+using System.IO;
 
 namespace Game
 {
@@ -19,15 +21,9 @@ namespace Game
         protected Dictionary<int, GamePeer> peersDic;
         protected Dictionary<int, PeerInfo> peerInfosDic;
 
-        public abstract void Setup();
-        /*
+        public virtual void Setup()
         {
-            for (int i = 0; i < MAX_ROOM_COUNT; i++)
-            {
-                roomsDic.Add(i, new GameRoom(i));
-            }
         }
-         * */
 
         public void TearDown()
         {
@@ -56,6 +52,10 @@ namespace Game
                 case CommonOperationCode.GetRooms:
                     SendAllRoomStatus(peer, sendParameters);
                     break;
+
+                case CommonOperationCode.ConfirmJoin:
+                    HandleConfirmJoinOperation(peer, operationRequest, sendParameters);
+                    break;
             }
         }
 
@@ -81,10 +81,6 @@ namespace Game
 
         public void HandleJoinOperation(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
         {
-            ClearPeerInfo(peer);
-            peersDic.Add(peer.ConnectionId, peer);
-            peerInfosDic.Add(peer.ConnectionId, new PeerInfo(peer));
-
             var joinRequest = new JoinRequest(peer.Protocol, operationRequest);
             if (!peer.ValidateOperation(joinRequest, sendParameters))
             {
@@ -92,9 +88,42 @@ namespace Game
             }
 
             var room = FindRoom(joinRequest.RoomID);
+
+            var response = new OperationResponse(CommonOperationCode.Join,
+                   new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false } });
+            response.Parameters[(byte)JoinParameterKey.RoomID] = joinRequest.RoomID;
+
+            if (room != null && room.CanJoin(peer))
+            {
+                response.Parameters[(byte)CommonParameterKey.Success] = true;
+            }
+            peer.SendOperationResponse(response, sendParameters);
+
+        }
+
+        public void HandleConfirmJoinOperation(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
+        {
+            var joinRequest = new ConfirmJoinRequest(peer.Protocol, operationRequest);
+            if (!peer.ValidateOperation(joinRequest, sendParameters))
+            {
+                return;
+            }
+
+            ClearPeerInfo(peer);
+            peersDic.Add(peer.ConnectionId, peer);
+            peerInfosDic.Add(peer.ConnectionId, new PeerInfo(peer, joinRequest.RoomID ));
+
+            var room = FindRoom(joinRequest.RoomID);
+
+            var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
+                new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false } });
             if (room != null)
             {
                 room.Join(peer, joinRequest, sendParameters);
+            }
+            else
+            {
+                peer.SendOperationResponse(response, sendParameters);
             }
         }
 
@@ -107,12 +136,9 @@ namespace Game
                 return;
             }
 
-            var room = FindRoom(exitRequest.RoomID);
-            if (room != null)
-            {
-                room.RemovePlayer(peer, exitRequest, sendParameters);
-            }
+            ClearPeerInfo(peer);
         }
+
 
         public void HandleChatOperation(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
         {
@@ -129,19 +155,25 @@ namespace Game
             }
         }
 
+        public void HandleDisconnect(GamePeer peer)
+        {
+            ClearPeerInfo(peer);
+        }
+
         public void SendAllRoomStatus(GamePeer peer, SendParameters sendParameters)
         {
             GetRoomsResponse response = new GetRoomsResponse();
-            response.RoomProperties = GetRoomProperties();
+            response.RoomProperties = PacketHelper.Serialize<RoomPropertyList>(GetRoomProperties());
             peer.SendOperationResponse(new OperationResponse(CommonOperationCode.GetRooms, response), sendParameters);
         }
 
-        private List<Dictionary<byte, object>> GetRoomProperties()
+        private RoomPropertyList GetRoomProperties()
         {
-            List<Dictionary<byte, object>> roomProps = new List<Dictionary<byte, object>>();
+            RoomPropertyList roomProps;
+            roomProps.Properties = new List<RoomProperty>();
             foreach (var room in roomsDic.Values)
             {
-                roomProps.Add(room.GetProperty());
+                roomProps.Properties.Add(room.GetProperty());
             }
 
             return roomProps;

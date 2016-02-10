@@ -43,6 +43,9 @@
       <HintPath>..\..\..\..\..\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\lib\PhotonHostRuntimeInterfaces.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\..\..\..\..\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\lib\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -61,6 +64,7 @@
     <Compile Include="GameServerManager.cs" />
     <Compile Include="IGameCore.cs" />
     <Compile Include="IServerManager.cs" />
+    <Compile Include="Operations\ConfirmJoinRequest.cs" />
     <Compile Include="Operations\GetRoomsResponse.cs" />
     <Compile Include="LGNetwork\LGParameterKey.cs" />
     <Compile Include="LGNetwork\LGOperationCode.cs" />
@@ -69,6 +73,8 @@
     <Compile Include="Operations\EventCode.cs" />
     <Compile Include="Operations\ExitRequest.cs" />
     <Compile Include="Operations\JoinRequest.cs" />
+    <Compile Include="Operations\PacketHelper.cs" />
+    <Compile Include="Operations\PacketModels.cs" />
     <Compile Include="PeerInfo.cs" />
     <Compile Include="Player\Player.cs" />
     <Compile Include="Player\PlayerKey.cs" />

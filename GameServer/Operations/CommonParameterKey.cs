@@ -25,4 +25,15 @@ namespace Game.Operations
     {
         RoomProperties = 0
     }
+
+    public enum ConfirmJoinParameterKey : byte
+    {
+        RoomID = 0
+    }
+
+    //128~255
+    public enum CommonParameterKey : byte
+    {
+        Success = 128
+    }
 }

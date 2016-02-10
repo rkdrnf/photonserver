@@ -19,6 +19,8 @@ namespace Barcarrats
 
         public override void Setup()
         {
+            base.Setup();
+
             roomsDic = new Dictionary<int, GameRoom>();
             for (int i = 0; i < MAX_ROOM_COUNT; i++)
             {

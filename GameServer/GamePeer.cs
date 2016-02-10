@@ -17,7 +17,6 @@ namespace Game
         
         public GamePeer(InitRequest initRequest) : base(initRequest)
         {
-            
         }
 
         protected override void OnOperationRequest(OperationRequest operationRequest, SendParameters sendParameters)
@@ -28,6 +27,7 @@ namespace Game
         protected override void OnDisconnect(PhotonHostRuntimeInterfaces.DisconnectReason reasonCode, string reasonDetail)
         {
             log.DebugFormat("GamePeer Disconnected. Reason: {0}, {1}", reasonCode, reasonDetail);
+            GameServerManager.gameCore.HandleDisconnect(this);
         }
 
         public bool ValidateOperation(Operation operation, SendParameters sendParameters)

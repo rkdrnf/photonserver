@@ -45,30 +45,52 @@ namespace Game
             return false;
         }
 
-        public void Join(GamePeer peer, JoinRequest joinReq, SendParameters sendParameters)
+        public bool CanJoin(GamePeer peer)
         {
             lock (syncRoot)
             { 
                 if (HasPlayer(peer))
                 {
-                    return; //already joined.
+                    return false; //already joined.
                 }
 
                 if (playersDic.Count == MAX_PLAYER_COUNT)
                 {
-                    return; //exceed max player count.
+                    return false; //exceed max player count.
                 }
 
+                return true;
+            }
+
+            
+        }
+
+        public void Join(GamePeer peer, ConfirmJoinRequest joinReq, SendParameters sendParameters)
+        {
+            if (CanJoin(peer))
+            {
                 PlayerKey pKey;
                 pKey.ID = peer.ConnectionId;
 
                 playersDic.Add(pKey, new Player(pKey));
 
                 BroadcastMessage += peer.OnBroadcastMessage;
+
+                var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
+                new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false },
+                { (byte)ConfirmJoinParameterKey.RoomID, joinReq.RoomID } });
+
+                peer.SendOperationResponse(response, sendParameters);
+            }
+            else
+            {
+                var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
+                new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false } });
+
+                peer.SendOperationResponse(response, sendParameters);
             }
 
-            var response = new OperationResponse(CommonOperationCode.Join);
-            peer.SendOperationResponse(response, sendParameters);
+            
         }
 
         public void RemovePlayer(GamePeer peer, ExitRequest exitReq, SendParameters sendParameters)
@@ -90,7 +112,8 @@ namespace Game
 
             if (exitReq != null)
             { 
-                var response = new OperationResponse(CommonOperationCode.Exit);
+                var response = new OperationResponse(CommonOperationCode.Exit,
+                    new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, true } });
                 peer.SendOperationResponse(response, sendParameters);
             }
         }
@@ -107,15 +130,14 @@ namespace Game
             peer.SendOperationResponse(response, sendParameters);
         }
 
-        public Dictionary<byte, object> GetProperty()
+        public RoomProperty GetProperty()
         {
-            Dictionary<byte, object> props = new Dictionary<byte, object>();
+            RoomProperty prop;
+            prop.ID = id;
+            prop.PlayerCount = playersDic.Count;
+            prop.MaxPlayerCount = MAX_PLAYER_COUNT;
 
-            props.Add((byte)RoomProperty.ID, id);
-            props.Add((byte)RoomProperty.PlayerCount, playersDic.Count);
-            props.Add((byte)RoomProperty.MaxPlayerCount, MAX_PLAYER_COUNT);
-
-            return props;
+            return prop;
         }
 
 
@@ -125,7 +147,7 @@ namespace Game
         }
     }
 
-    public enum RoomProperty : byte
+    public enum RoomPropertyType : byte
     {
         ID = 0,
         PlayerCount = 1,
