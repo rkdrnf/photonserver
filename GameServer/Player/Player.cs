@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Game
 {
-    public class Player
+    public abstract class Player
     {
         public GamePeer peer;
         public PlayerKey key;
 
 
-        public Player(GamePeer peer, PlayerKey key)
+        public Player(GamePeer peer)
         {
             this.peer = peer;
-            this.key = key;
+            this.key = PlayerKey.MakeFromPeer(peer);
         }
     }
 }

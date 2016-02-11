@@ -8,23 +8,32 @@ using System.Collections;
 using Photon.SocketServer;
 using Photon.SocketServer.Rpc;
 using Game.Operations;
+using ExitGames.Concurrency.Fibers;
 
 namespace Game
 {
-    public abstract class GameRoom : IDisposable
+    public abstract class GameRoom 
     {
         int id;
-        protected Dictionary<PlayerKey, Player> playersDic;
-
-        private static readonly int MAX_PLAYER_COUNT = 7;
+        protected PlayerManager playerManager;
 
         protected event Action<GamePeer, EventData, SendParameters> BroadcastMessageHandler;
+        
+        public delegate void OnPlayerLeaveAction(Player player);
+        public delegate void OnPlayerJoinAction(Player player);
+
+        protected event OnPlayerJoinAction OnPlayerJoinHandler;
+        protected event OnPlayerLeaveAction OnPlayerLeaveHandler;
+
         protected readonly object syncRoot = new object();
+
+        public PoolFiber ExecutionFiber { get; private set; }
 
         public GameRoom(int id)
         {
             this.id = id;
-            playersDic = new Dictionary<PlayerKey, Player>();
+            ExecutionFiber = new PoolFiber();
+            ExecutionFiber.Start();
         }
 
         public int GetID()
@@ -32,65 +41,40 @@ namespace Game
             return id;
         }
 
-        public Player GetPlayer(GamePeer peer)
-        {
-            PlayerKey key = PlayerKey.MakeFromPeer(peer);
-            if (playersDic.ContainsKey(key))
-            {
-                return playersDic[key];
-            }
-
-            return null;
-        }
-
-        public bool HasPlayer(GamePeer peer)
-        {
-            PlayerKey pKey;
-            pKey.ID = peer.ConnectionId;
-
-            if (playersDic.ContainsKey(pKey))
-            {
-                return true;
-            }
-            return false;
-        }
-
         public bool CanJoin(GamePeer peer)
         {
-            lock (syncRoot)
-            { 
-                if (HasPlayer(peer))
-                {
-                    return false; //already joined.
-                }
-
-                if (playersDic.Count == MAX_PLAYER_COUNT)
-                {
-                    return false; //exceed max player count.
-                }
-
-                return true;
+            if (playerManager.HasPlayer(peer))
+            {
+                return false; //already joined.
             }
 
-            
+            if (playerManager.isFull())
+            {
+                return false; //exceed max player count.
+            }
+
+            return true;
         }
 
         public void Join(GamePeer peer, ConfirmJoinRequest joinReq, SendParameters sendParameters)
         {
             if (CanJoin(peer))
             {
-                PlayerKey pKey;
-                pKey.ID = peer.ConnectionId;
-
-                playersDic.Add(pKey, new Player(peer, pKey));
+                playerManager.AddPlayer(peer);
 
                 BroadcastMessageHandler += peer.OnBroadcastMessage;
+                peer.OnLeaveHandler += OnPeerLeave;
+
+                EventData eventData = new EventData(EventCode.PlayerJoin);
+                BroadcastMessage(peer, eventData, sendParameters);
 
                 var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
                 new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false },
                 { (byte)ConfirmJoinParameterKey.RoomID, joinReq.RoomID } });
 
                 peer.SendOperationResponse(response, sendParameters);
+
+                OnJoin(peer);
             }
             else
             {
@@ -99,32 +83,36 @@ namespace Game
 
                 peer.SendOperationResponse(response, sendParameters);
             }
-
-            
         }
 
-        public void RemovePlayer(GamePeer peer, ExitRequest exitReq, SendParameters sendParameters)
+        protected abstract void OnJoin(GamePeer peer);
+
+        public void Leave(GamePeer peer)
+        {
+            OnPeerLeave(peer);
+        }
+
+        private void OnPeerLeave(GamePeer peer)
+        {
+            RemovePlayer(peer, null, new SendParameters());
+        }
+
+        public virtual void RemovePlayer(GamePeer peer, ExitRequest exitReq, SendParameters sendParameters)
         {
             lock (syncRoot)
             { 
-                if (HasPlayer(peer) == false)
+                if (playerManager.HasPlayer(peer) == false)
                 {
                     return; //already removed.
                 }
 
-                PlayerKey pKey;
-                pKey.ID = peer.ConnectionId;
-
-                playersDic.Remove(pKey);
+                playerManager.RemovePlayer(peer);
 
                 BroadcastMessageHandler -= peer.OnBroadcastMessage;
-            }
+                peer.OnLeaveHandler -= OnPeerLeave;
 
-            if (exitReq != null)
-            { 
-                var response = new OperationResponse(CommonOperationCode.Exit,
-                    new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, true } });
-                peer.SendOperationResponse(response, sendParameters);
+                EventData eventData = new EventData(EventCode.PlayerLeave);
+                BroadcastMessage(peer, eventData, sendParameters);
             }
         }
 
@@ -144,10 +132,15 @@ namespace Game
         {
             RoomProperty prop;
             prop.ID = id;
-            prop.PlayerCount = playersDic.Count;
-            prop.MaxPlayerCount = MAX_PLAYER_COUNT;
+            prop.PlayerCount = playerManager.Count;
+            prop.MaxPlayerCount = playerManager.MaxCount;
 
             return prop;
+        }
+
+        public bool HasPlayer(GamePeer peer)
+        {
+            return playerManager.HasPlayer(peer);
         }
 
         protected void BroadcastMessage(GamePeer peer, EventData eventData, SendParameters sendParameters)
@@ -155,9 +148,24 @@ namespace Game
             BroadcastMessageHandler(peer, eventData, sendParameters);
         }
 
+        public IDisposable ScheduleJob(Job job, int timems)
+        {
+            return ExecutionFiber.Schedule(() => this.ProcessJob(job), timems);
+        }
+
+        public void ProcessJob(Job job)
+        {
+            if (job == null)
+            {
+                return;
+            }
+
+            job.Run(this);
+        }
 
         public void Dispose()
         {
+            ExecutionFiber.Dispose();
             //disposing code
         }
     }

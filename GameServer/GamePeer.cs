@@ -14,6 +14,10 @@ namespace Game
     public abstract class GamePeer : PeerBase
     {
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+
+        public delegate void OnLeaveAction(GamePeer peer);
+
+        public event OnLeaveAction OnLeaveHandler;
         
         public GamePeer(InitRequest initRequest) : base(initRequest)
         {
@@ -48,6 +52,11 @@ namespace Game
             {
                 this.SendEvent(eventData, sendParameters);
             }
+        }
+
+        public void Leave()
+        {
+            OnLeaveHandler(this);
         }
 
     }

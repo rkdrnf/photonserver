@@ -63,10 +63,6 @@ namespace Baccarats
             {
                 roomsDic.Add(i, new BaccaratGameRoom(i));
             }
-
-            peersDic = new Dictionary<int, GamePeer>();
-            peerInfosDic = new Dictionary<int, PeerInfo>();
-
         }
     }
 }

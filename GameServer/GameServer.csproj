@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Card.cs" />
+    <Compile Include="Job.cs" />
     <Compile Include="Operations\ChatRequest.cs" />
     <Compile Include="Operations\CommonOperationCode.cs" />
     <Compile Include="GameCore.cs" />
@@ -77,6 +78,8 @@
     <Compile Include="Operations\PacketHelper.cs" />
     <Compile Include="Operations\PacketModels.cs" />
     <Compile Include="PeerInfo.cs" />
+    <Compile Include="PeerManager.cs" />
+    <Compile Include="PlayerManager.cs" />
     <Compile Include="Player\Player.cs" />
     <Compile Include="Player\PlayerKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

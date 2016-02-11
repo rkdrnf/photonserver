@@ -56,11 +56,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaccaratBet.cs" />
+    <Compile Include="BaccaratGame.cs" />
+    <Compile Include="BaccaratPlayer.cs" />
     <Compile Include="BaccaratResult.cs" />
     <Compile Include="BaccaratGameRoom.cs" />
     <Compile Include="BaccaratGameCore.cs" />
     <Compile Include="BaccaratPeer.cs" />
     <Compile Include="BaccaratServer.cs" />
+    <Compile Include="BaccaratPlayerManager.cs" />
+    <Compile Include="NextGame.cs" />
     <Compile Include="Operations\SendBetRequest.cs" />
     <Compile Include="Operations\BroadcastBetRequest.cs" />
     <Compile Include="Operations\GameResultResponse.cs" />

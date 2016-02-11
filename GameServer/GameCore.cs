@@ -18,15 +18,18 @@ namespace Game
         protected int MAX_ROOM_COUNT = 20;
         protected Dictionary<int, GameRoom> roomsDic;
 
-        protected Dictionary<int, GamePeer> peersDic;
-        protected Dictionary<int, PeerInfo> peerInfosDic;
+        private PeerManager peerManager;
 
         public virtual void Setup()
         {
+            peerManager = new PeerManager();
+            peerManager.Setup();
         }
 
         public void TearDown()
         {
+            peerManager.TearDown();
+
             foreach (var room in roomsDic.Values)
             {
                 room.Dispose();
@@ -56,26 +59,6 @@ namespace Game
                 case CommonOperationCode.ConfirmJoin:
                     HandleConfirmJoinOperation(peer, operationRequest, sendParameters);
                     break;
-            }
-        }
-
-        private void ClearPeerInfo(GamePeer peer)
-        {
-            if (peersDic.ContainsKey(peer.ConnectionId))
-            {
-                peersDic.Remove(peer.ConnectionId);
-            }
-
-            if (peerInfosDic.ContainsKey(peer.ConnectionId))
-            {
-                var peerInfo = peerInfosDic[peer.ConnectionId];
-                var room = FindRoom(peerInfo.roomID);
-                if (room != null && room.HasPlayer(peer))
-                {
-                    room.RemovePlayer(peer, null, new SendParameters());
-                }
-
-                peerInfosDic.Remove(peer.ConnectionId);
             }
         }
 
@@ -109,20 +92,18 @@ namespace Game
                 return;
             }
 
-            ClearPeerInfo(peer);
-            peersDic.Add(peer.ConnectionId, peer);
-            peerInfosDic.Add(peer.ConnectionId, new PeerInfo(peer, joinRequest.RoomID ));
+            peerManager.OnPeerJoin(peer, new PeerInfo(peer, joinRequest.RoomID));
 
             var room = FindRoom(joinRequest.RoomID);
 
-            var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
-                new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false } });
             if (room != null)
             {
-                room.Join(peer, joinRequest, sendParameters);
+                room.ExecutionFiber.Enqueue(() => room.Join(peer, joinRequest, sendParameters));
             }
             else
             {
+                var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
+                new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false } });
                 peer.SendOperationResponse(response, sendParameters);
             }
         }
@@ -136,7 +117,12 @@ namespace Game
                 return;
             }
 
-            ClearPeerInfo(peer);
+            var room = FindPeerRoom(peer);
+            if (room != null)
+            {
+                room.ExecutionFiber.Enqueue(() => room.Leave(peer));
+            }
+            peer.Leave();
         }
 
 
@@ -157,7 +143,7 @@ namespace Game
 
         public void HandleDisconnect(GamePeer peer)
         {
-            ClearPeerInfo(peer);
+            peer.Leave();
         }
 
         public void SendAllRoomStatus(GamePeer peer, SendParameters sendParameters)

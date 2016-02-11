@@ -13,24 +13,31 @@ namespace Baccarats
 {
     public class BaccaratGameRoom : GameRoom
     {
+        private static readonly int BACCARAT_PLAYER_COUNT = 7;
+        private static readonly int MAX_GAME_TIME = 11000; //11secs
+
+        private BaccaratGame game;
+
         public BaccaratGameRoom(int roomID)
             : base(roomID)
         {
             playersBetDic = new Dictionary<Player, BaccaratBet>();
+            playerManager = new BaccaratPlayerManager(BACCARAT_PLAYER_COUNT);
+            game = new BaccaratGame();
         }
 
         private Dictionary<Player, BaccaratBet> playersBetDic;
 
         public void Bet(GamePeer peer, SendBetRequest sendBet)
         {
-            Player player = GetPlayer(peer);
+            Player player = playerManager.GetPlayer(peer);
 
             if (HasBet(player) == false && CanBet(player))
             {
                 playersBetDic.Add(player, new BaccaratBet(sendBet.BankerBet, sendBet.PlayerBet, sendBet.TieBet));
             }
 
-            CheckAllBet(player, sendBet);
+            CheckAllBet();
         }
 
         public void BroadcastBet(GamePeer peer, BroadcastBetRequest broadcastBet)
@@ -52,23 +59,66 @@ namespace Baccarats
             return true;
         }
 
-        private void CheckAllBet(Player player, SendBetRequest sendBet)
+        private void CheckAllBet()
         {
-            if (playersBetDic.Count == playersDic.Count) //if all bet, send result cards set
+            if (playersBetDic.Count == playerManager.Count) //if all bet, send result cards set
             {
-                SendResultToPlayers();
-                playersBetDic.Clear();
+                NextGame();
             }
+        }
+
+        protected override void OnJoin(GamePeer peer)
+        {
+            if (playerManager.Count == 1)
+            {
+                ClearGame();
+                StartGame();
+            }
+        }
+
+        private void ClearGame()
+        {
+            playersBetDic.Clear();
+            game.Clear();
+        }
+
+        private void EndGame()
+        {
+            SendResultToPlayers();
+            //remove scheduled game;
+        }
+
+        private void StartGame()
+        {
+            var schedule = ScheduleJob(new NextGame(), MAX_GAME_TIME);
+            game.AddSchedule(schedule);
+            game.Start();
+        }
+
+        public void NextGame()
+        {
+            EndGame();
+            ClearGame();
+            StartGame();
         }
 
         private void SendResultToPlayers()
         {
-            foreach (Player player in playersDic.Values)
+            playerManager.ForEach((player) =>
             {
-                var bet = playersBetDic[player];
-                GameResultResponse response = Determine(bet);
-                player.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
-            }
+                if (playersBetDic.ContainsKey(player))
+                {
+                    var bet = playersBetDic[player];
+                    GameResultResponse response = game.GetBetResult(bet);
+                    player.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
+                }
+                else
+                {
+                    var bet = new BaccaratBet(0, 0, 0);
+                    GameResultResponse response = game.GetBetResult(bet);
+                    player.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
+                }
+            });
         }
 
         private bool HasBet(Player player)
@@ -76,157 +126,15 @@ namespace Baccarats
             return playersBetDic.ContainsKey(player);
         }
 
-        public GameResultResponse Determine(BaccaratBet bet)
+        public override void RemovePlayer(GamePeer peer, ExitRequest exitReq, SendParameters sendParameters)
         {
-            // Pick 2 cards for each
-            CardSet bankerCards;
-            bankerCards.cards = new List<Card>();
-            CardSet playerCards;
-            playerCards.cards = new List<Card>();
+            Player player = playerManager.GetPlayer(peer);
+            playersBetDic.Remove(player);
 
-            var random = new System.Random();
+            base.RemovePlayer(peer, exitReq, sendParameters);
 
-            bankerCards.cards.Add(PickRandomCard(random));
-            bankerCards.cards.Add(PickRandomCard(random));
-            playerCards.cards.Add(PickRandomCard(random));
-            playerCards.cards.Add(PickRandomCard(random));
-
-            // Get the scores for the two cards
-            int bankerScore = 0;
-            foreach (var card in bankerCards.cards)
-            {
-                bankerScore += card.GetBaccaratScore();
-            }
-            bankerScore %= 10;
-
-            int playerScore = 0;
-            foreach (var card in playerCards.cards)
-            {
-                playerScore += card.GetBaccaratScore();
-            }
-            playerScore %= 10;
-
-            // Pick an extra card for each players if needed
-            if (bankerScore >= 8 || playerScore >= 8)
-            {
-                //Natural
-            }
-            else if (playerScore >= 6)
-            {
-                //Player Stand
-                if (bankerScore < 6)
-                {
-                    bankerCards.cards.Add(PickRandomCard(random));
-                }
-            }
-            else
-            {
-                Card thirdPlayerCard = PickRandomCard(random);
-                playerCards.cards.Add(thirdPlayerCard);
-
-                bool anotherBankerCard = false;
-                if (bankerScore <= 2)
-                {
-                    anotherBankerCard = true;
-                }
-                else if (bankerScore == 3)
-                {
-                    anotherBankerCard = thirdPlayerCard.GetBaccaratScore() != 8;
-                }
-                else if (bankerScore == 4)
-                {
-                    anotherBankerCard = thirdPlayerCard.GetBaccaratScore() >= 2 && thirdPlayerCard.GetBaccaratScore() <= 7;
-                }
-                else if (bankerScore == 5)
-                {
-                    anotherBankerCard = thirdPlayerCard.GetBaccaratScore() >= 4 && thirdPlayerCard.GetBaccaratScore() <= 7;
-                }
-                else if (bankerScore == 6)
-                {
-                    anotherBankerCard = thirdPlayerCard.GetBaccaratScore() == 6 || thirdPlayerCard.GetBaccaratScore() == 7;
-                }
-
-                if (anotherBankerCard)
-                {
-                    bankerCards.cards.Add(PickRandomCard(random));
-                }
-            }
-
-            BaccaratResult result = GetResult(bet, bankerCards, playerCards);
-
-            GameResultResponse response = new GameResultResponse();
-            response.GameResult = (byte)result.Type;
-            response.BetMoney = result.BetMoney;
-            response.MoneyDelta = result.Money;
-            response.PlayerCards = PacketHelper.Serialize<CardSet>(playerCards);
-            response.BankerCards = PacketHelper.Serialize<CardSet>(bankerCards);
-
-            return response;
+            CheckAllBet();
         }
 
-        // Get the result from the cards
-        private BaccaratResult GetResult(BaccaratBet bet, CardSet bankerCards, CardSet playerCards)
-        {
-            int bankerScore = 0;
-            int playerScore = 0;
-
-            foreach (var c in bankerCards.cards)
-            {
-                bankerScore += c.GetBaccaratScore();
-            }
-            bankerScore %= 10;
-
-            foreach (var c in playerCards.cards)
-            {
-                playerScore += c.GetBaccaratScore();
-            }
-            playerScore %= 10;
-
-            BaccaratResultType type;
-
-            if (bankerScore > playerScore)
-            {
-                type = BaccaratResultType.Banker;
-            }
-            else if (bankerScore < playerScore)
-            {
-                type = BaccaratResultType.Player;
-            }
-            else
-            {
-                type = BaccaratResultType.Tie;
-            }
-
-            int money = 0;
-
-            if (type == BaccaratResultType.Banker)
-            {
-                money = bet.BankerBet * 95 / 100 - bet.PlayerBet
-                    - bet.TieBet;
-            }
-            else if (type == BaccaratResultType.Player)
-            {
-                money = bet.PlayerBet - bet.BankerBet - bet.TieBet;
-            }
-            else
-            {
-                money = bet.TieBet * 8;
-            }
-
-            int betMoney = bet.BankerBet + bet.PlayerBet + bet.TieBet;
-
-            return new BaccaratResult(type, money, betMoney);
-        }
-
-        private Card PickRandomCard(System.Random random)
-        {
-            Array ranks = Enum.GetValues(typeof(Rank));
-            Array suits = Enum.GetValues(typeof(Suit));
-
-            Rank rank = (Rank)ranks.GetValue(random.Next(ranks.Length));
-            Suit suit = (Suit)suits.GetValue(random.Next(suits.Length));
-
-            return new Card(rank, suit);
-        }
     }
 }
