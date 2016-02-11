@@ -23,18 +23,22 @@ namespace Baccarats
         {
             playersBetDic = new Dictionary<Player, BaccaratBet>();
             playerManager = new BaccaratPlayerManager(BACCARAT_PLAYER_COUNT);
+            seatsDic = new Dictionary<int, Player>();
             game = new BaccaratGame();
         }
 
         private Dictionary<Player, BaccaratBet> playersBetDic;
+        private Dictionary<int, Player> seatsDic;
+        private int[] seatPriority = new int[] { 4, 3, 5, 2, 6, 1, 7 };
 
         public void Bet(GamePeer peer, SendBetRequest sendBet)
         {
-            Player player = playerManager.GetPlayer(peer);
+            BaccaratPlayer player = playerManager.GetPlayer(peer) as BaccaratPlayer;
+            var bet = new BaccaratBet(sendBet.BankerBet, sendBet.PlayerBet, sendBet.TieBet);
 
-            if (HasBet(player) == false && CanBet(player))
+            if (HasBet(player) == false && CanBet(player, bet))
             {
-                playersBetDic.Add(player, new BaccaratBet(sendBet.BankerBet, sendBet.PlayerBet, sendBet.TieBet));
+                playersBetDic.Add(player, bet);
             }
 
             CheckAllBet();
@@ -42,6 +46,7 @@ namespace Baccarats
 
         public void BroadcastBet(GamePeer peer, BroadcastBetRequest broadcastBet)
         {
+            broadcastBet.Actor = playerManager.GetPlayer(peer).key.ID;
             var eventData = new EventData(EventCode.BaccaratBroadcastBet) { Parameters = broadcastBet.OperationRequest.Parameters };
             
             lock (syncRoot)
@@ -53,10 +58,18 @@ namespace Baccarats
             peer.SendOperationResponse(response, new SendParameters());
         }
 
-        private bool CanBet(Player player)
+        private BaccaratBet GetBet(Player player)
         {
-            //check if player have enough money.
-            return true;
+            if (playersBetDic.ContainsKey(player)) {
+                return playersBetDic[player];
+            } else {
+                return null;
+            }
+        }
+
+        private bool CanBet(BaccaratPlayer player, BaccaratBet bet)
+        {
+            return player.money >= (bet.BankerBet + bet.PlayerBet + bet.TieBet);
         }
 
         private void CheckAllBet()
@@ -69,10 +82,60 @@ namespace Baccarats
 
         protected override void OnJoin(GamePeer peer)
         {
+            BaccaratPlayer player = playerManager.GetPlayer(peer) as BaccaratPlayer;
+            SitInEmptySeat(player);
+
+            NewPlayerJoinEvent newJoin = new NewPlayerJoinEvent();
+            newJoin.Actor = player.key.ID;
+            newJoin.Money = player.money;
+            newJoin.Name = player.name;
+            newJoin.Seat = player.seat;
+
+            EventData eventData = new EventData(EventCode.PlayerJoin,newJoin);
+            BroadcastMessage(peer, eventData, new SendParameters());
+
+            ConfirmJoinResponse joinRes = new ConfirmJoinResponse();
+            joinRes.Actor = player.key.ID;
+            joinRes.Seat = player.seat;
+            joinRes.Money = player.money;
+            ExistingPlayerInfos infos;
+            infos.infos = new List<ExistingPlayerInfo>();
+
+            playerManager.ForEach((roomPlayer) =>
+            {
+                var bRoomPlayer = roomPlayer as BaccaratPlayer;
+                if (bRoomPlayer.key.ID == player.key.ID) return;
+                ExistingPlayerInfo pInfo;
+                pInfo.ID = bRoomPlayer.key.ID;
+                pInfo.Name = bRoomPlayer.name;
+                pInfo.Seat = bRoomPlayer.seat;
+                pInfo.Money = bRoomPlayer.money;
+                pInfo.Bet = GetBet(bRoomPlayer);
+
+                infos.infos.Add(pInfo);
+            });
+            joinRes.OtherPlayerInfos = PacketHelper.Serialize<ExistingPlayerInfos>(infos);
+
+            var response = new OperationResponse(CommonOperationCode.ConfirmJoin, joinRes);
+
+            peer.SendOperationResponse(response, new SendParameters());
+
             if (playerManager.Count == 1)
             {
                 ClearGame();
                 StartGame();
+            }
+        }
+
+        private void SitInEmptySeat(BaccaratPlayer player)
+        {
+            foreach(int seatNum in seatPriority)
+            {
+                if (seatsDic.ContainsKey(seatNum) == false)
+                {
+                    player.seat = seatNum;
+                    seatsDic.Add(seatNum, player);
+                }
             }
         }
 
@@ -106,17 +169,20 @@ namespace Baccarats
         {
             playerManager.ForEach((player) =>
             {
-                if (playersBetDic.ContainsKey(player))
+                BaccaratPlayer bPlayer = player as BaccaratPlayer;
+                if (playersBetDic.ContainsKey(bPlayer))
                 {
-                    var bet = playersBetDic[player];
+                    var bet = playersBetDic[bPlayer];
                     GameResultResponse response = game.GetBetResult(bet);
-                    player.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
+                    bPlayer.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
+                    bPlayer.money += response.MoneyDelta;
+                    //WebHelper.UpdatePlayerMoney(player.name, response.MoneyDelta);
                 }
                 else
                 {
                     var bet = new BaccaratBet(0, 0, 0);
                     GameResultResponse response = game.GetBetResult(bet);
-                    player.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
+                    bPlayer.peer.SendOperationResponse(new OperationResponse(CommonOperationCode.BaccaratGameResult, response), new SendParameters());
                 }
             });
         }

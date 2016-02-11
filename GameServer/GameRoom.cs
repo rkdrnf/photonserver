@@ -56,23 +56,14 @@ namespace Game
             return true;
         }
 
-        public void Join(GamePeer peer, ConfirmJoinRequest joinReq, SendParameters sendParameters)
+        public void Join(GamePeer peer, ConfirmJoinRequest joinReq, SendParameters sendParameters, PlayerInfo info)
         {
             if (CanJoin(peer))
             {
-                playerManager.AddPlayer(peer);
+                Player newPlayer = playerManager.AddPlayer(peer, info);
 
                 BroadcastMessageHandler += peer.OnBroadcastMessage;
                 peer.OnLeaveHandler += OnPeerLeave;
-
-                EventData eventData = new EventData(EventCode.PlayerJoin);
-                BroadcastMessage(peer, eventData, sendParameters);
-
-                var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
-                new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false },
-                { (byte)ConfirmJoinParameterKey.RoomID, joinReq.RoomID } });
-
-                peer.SendOperationResponse(response, sendParameters);
 
                 OnJoin(peer);
             }
@@ -106,13 +97,17 @@ namespace Game
                     return; //already removed.
                 }
 
-                playerManager.RemovePlayer(peer);
-
                 BroadcastMessageHandler -= peer.OnBroadcastMessage;
                 peer.OnLeaveHandler -= OnPeerLeave;
 
-                EventData eventData = new EventData(EventCode.PlayerLeave);
+                PlayerLeaveEvent leaveEvent = new PlayerLeaveEvent();
+                leaveEvent.Actor = playerManager.GetPlayer(peer).key.ID;
+
+                EventData eventData = new EventData(EventCode.PlayerLeave, leaveEvent);
                 BroadcastMessage(peer, eventData, sendParameters);
+
+                playerManager.RemovePlayer(peer);
+
             }
         }
 
@@ -145,6 +140,8 @@ namespace Game
 
         protected void BroadcastMessage(GamePeer peer, EventData eventData, SendParameters sendParameters)
         {
+            if (BroadcastMessageHandler == null) return;
+
             BroadcastMessageHandler(peer, eventData, sendParameters);
         }
 

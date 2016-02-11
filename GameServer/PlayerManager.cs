@@ -42,12 +42,13 @@ namespace Game
             return false;
         }
 
-        public void AddPlayer(GamePeer peer)
+        public Player AddPlayer(GamePeer peer, PlayerInfo info)
         {
             lock (playerLock)
             { 
-                Player newPlayer = MakePlayer(peer);
+                Player newPlayer = MakePlayer(peer, info);
                 playersDic.Add(newPlayer.key, newPlayer);
+                return newPlayer;
             }
         }
 
@@ -85,6 +86,6 @@ namespace Game
             }
         }
 
-        protected abstract Player MakePlayer(GamePeer peer);
+        protected abstract Player MakePlayer(GamePeer peer, PlayerInfo info);
     }
 }

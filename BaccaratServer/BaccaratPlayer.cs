@@ -9,15 +9,16 @@ namespace Baccarats
 {
     public class BaccaratPlayer : Player
     {
-        public BaccaratPlayer(GamePeer peer) : base(peer)
+        public BaccaratPlayer(GamePeer peer, PlayerInfo info) : base(peer, info)
         {
-            money = 0;
+            money = info.money;
             win = 0;
             lose = 0;
         }
 
-        int money;
-        int win;
-        int lose;
+        public int money;
+        public int win;
+        public int lose;
+        public int seat;
     }
 }

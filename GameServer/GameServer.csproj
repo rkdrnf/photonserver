@@ -36,6 +36,10 @@
     <Reference Include="ExitGamesLibs">
       <HintPath>..\..\..\..\..\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\lib\ExitGamesLibs.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Photon.SocketServer">
       <HintPath>..\..\..\..\..\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\lib\Photon.SocketServer.dll</HintPath>
     </Reference>
@@ -48,6 +52,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -77,12 +85,18 @@
     <Compile Include="Operations\JoinRequest.cs" />
     <Compile Include="Operations\PacketHelper.cs" />
     <Compile Include="Operations\PacketModels.cs" />
+    <Compile Include="Operations\PlayerLeaveEvent.cs" />
     <Compile Include="PeerInfo.cs" />
     <Compile Include="PeerManager.cs" />
     <Compile Include="PlayerManager.cs" />
     <Compile Include="Player\Player.cs" />
+    <Compile Include="Player\PlayerInfo.cs" />
     <Compile Include="Player\PlayerKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

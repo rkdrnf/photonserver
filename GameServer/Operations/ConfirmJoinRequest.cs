@@ -33,7 +33,10 @@ namespace Game.Operations
         {
         }
 
-        [DataMember(Code = (byte)ConfirmJoinParameterKey.RoomID)]
+        [DataMember(Code = (byte)ConfirmJoinPK.RoomID)]
         public int RoomID { get; set; }
+
+        [DataMember(Code = (byte)ConfirmJoinPK.UserKey)]
+        public string UserKey { get; set; }
     }
 }

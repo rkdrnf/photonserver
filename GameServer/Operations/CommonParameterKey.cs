@@ -31,16 +31,10 @@ namespace Game.Operations
         RoomProperties = 0
     }
 
-    public enum ConfirmJoinParameterKey : byte
+    public enum ConfirmJoinPK : byte
     {
-        RoomID = 0
-    }
-
-    public enum SendBetParameterKey : byte
-    {
-        BankerBet = 0,
-        PlayerBet = 1,
-        TieBet = 2
+        RoomID = 0,
+        UserKey = 1
     }
 
     public enum BaccaratGameResultPK : byte
@@ -50,5 +44,18 @@ namespace Game.Operations
         MoneyDelta = 2,
         PlayerCards = 3,
         BankerCards = 4
+    }
+
+    public enum PlayerLeavePK : byte
+    {
+        Actor = 0
+    }
+
+    public enum SendBetPK : byte
+    {
+        Actor = 0,
+        BankerBet = 1,
+        PlayerBet = 2,
+        TieBet = 3
     }
 }

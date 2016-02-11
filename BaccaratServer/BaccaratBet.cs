@@ -1,14 +1,19 @@
 ﻿using System.Collections;
-
+using ProtoBuf;
 namespace Casino
 {
-
+    [ProtoContract]
     public class BaccaratBet
     {
-
+        [ProtoMember(1)]
         public int BankerBet { get; private set; }
+        [ProtoMember(2)]
         public int PlayerBet { get; private set; }
+        [ProtoMember(3)]
         public int TieBet { get; private set; }
+
+        public BaccaratBet()
+        { }
 
         public BaccaratBet(int bankerBet, int playerBet, int tieBet)
         {

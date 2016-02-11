@@ -14,6 +14,7 @@ using Game;
         {
             SetupServerManager();
             GameServerManager.Setup();
+            PeerManager peerManager = PeerManager.Instance;
         }
 
         protected override void TearDown()

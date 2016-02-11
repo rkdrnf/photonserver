@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Game;
+using System.Net;
+using System.Threading;
+using System.Collections.Specialized;
+using System.Net.Http;
 
 namespace Baccarats
 {
@@ -13,12 +17,15 @@ namespace Baccarats
         {
         }
 
-        protected override Player MakePlayer(GamePeer peer)
+        protected override Player MakePlayer(GamePeer peer, PlayerInfo info)
         {
             //Get Info from webserver
-            BaccaratPlayer newPlayer = new BaccaratPlayer(peer);
+            BaccaratPlayer newPlayer = new BaccaratPlayer(peer, info);
 
             return newPlayer;
         }
+
+
+        
     }
 }

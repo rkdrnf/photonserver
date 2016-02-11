@@ -10,6 +10,8 @@ using System.Collections;
 using Game.Operations;
 using ProtoBuf;
 using System.IO;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace Game
 {
@@ -18,18 +20,12 @@ namespace Game
         protected int MAX_ROOM_COUNT = 20;
         protected Dictionary<int, GameRoom> roomsDic;
 
-        private PeerManager peerManager;
-
         public virtual void Setup()
         {
-            peerManager = new PeerManager();
-            peerManager.Setup();
         }
 
         public void TearDown()
         {
-            peerManager.TearDown();
-
             foreach (var room in roomsDic.Values)
             {
                 room.Dispose();
@@ -57,7 +53,9 @@ namespace Game
                     break;
 
                 case CommonOperationCode.ConfirmJoin:
-                    HandleConfirmJoinOperation(peer, operationRequest, sendParameters);
+                    var task = HandleConfirmJoinOperation(peer, operationRequest, sendParameters);
+                    int x = 5;
+                    task.Wait();
                     break;
             }
         }
@@ -81,10 +79,9 @@ namespace Game
                 response.Parameters[(byte)CommonParameterKey.Success] = true;
             }
             peer.SendOperationResponse(response, sendParameters);
-
         }
 
-        public void HandleConfirmJoinOperation(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
+        public async Task HandleConfirmJoinOperation(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
         {
             var joinRequest = new ConfirmJoinRequest(peer.Protocol, operationRequest);
             if (!peer.ValidateOperation(joinRequest, sendParameters))
@@ -92,13 +89,18 @@ namespace Game
                 return;
             }
 
-            peerManager.OnPeerJoin(peer, new PeerInfo(peer, joinRequest.RoomID));
+            //string playerInfoStr = await WebHelper.RequestPlayerInfo(peer, joinRequest.UserKey);
+            string playerInfoStr = "{ \"username\": \"test\", \"money\": 2000 }";
+
+            PlayerInfo info = JsonConvert.DeserializeObject<PlayerInfo>(playerInfoStr);
+
+            PeerManager.Instance.OnPeerJoin(peer, new PeerInfo(peer, joinRequest.RoomID, joinRequest.UserKey));
 
             var room = FindRoom(joinRequest.RoomID);
 
             if (room != null)
             {
-                room.ExecutionFiber.Enqueue(() => room.Join(peer, joinRequest, sendParameters));
+                room.ExecutionFiber.Enqueue(() => room.Join(peer, joinRequest, sendParameters, info));
             }
             else
             {
@@ -108,6 +110,7 @@ namespace Game
             }
         }
 
+        
 
         public void HandleExitOperation(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
         {

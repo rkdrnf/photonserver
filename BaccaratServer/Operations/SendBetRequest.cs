@@ -26,13 +26,13 @@ namespace Baccarats
         {
         }
 
-        [DataMember(Code = (byte)SendBetParameterKey.BankerBet)]
+        [DataMember(Code = (byte)SendBetPK.BankerBet)]
         public int BankerBet { get; set; }
 
-        [DataMember(Code = (byte)SendBetParameterKey.PlayerBet)]
+        [DataMember(Code = (byte)SendBetPK.PlayerBet)]
         public int PlayerBet { get; set; }
 
-        [DataMember(Code = (byte)SendBetParameterKey.TieBet)]
+        [DataMember(Code = (byte)SendBetPK.TieBet)]
         public int TieBet { get; set; }
     }
 }

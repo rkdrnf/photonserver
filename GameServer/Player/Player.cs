@@ -10,12 +10,14 @@ namespace Game
     {
         public GamePeer peer;
         public PlayerKey key;
+        public string name;
 
 
-        public Player(GamePeer peer)
+        public Player(GamePeer peer, PlayerInfo info)
         {
             this.peer = peer;
             this.key = PlayerKey.MakeFromPeer(peer);
+            this.name = info.username;
         }
     }
 }

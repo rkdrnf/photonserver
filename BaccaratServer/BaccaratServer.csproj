@@ -46,8 +46,14 @@
       <HintPath>..\..\..\..\..\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\lib\PhotonHostRuntimeInterfaces.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.602, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\lib\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,6 +71,9 @@
     <Compile Include="BaccaratServer.cs" />
     <Compile Include="BaccaratPlayerManager.cs" />
     <Compile Include="NextGame.cs" />
+    <Compile Include="Operations\ConfirmJoinResponse.cs" />
+    <Compile Include="Operations\NewPlayerJoinEvent.cs" />
+    <Compile Include="Operations\PacketModels.cs" />
     <Compile Include="Operations\SendBetRequest.cs" />
     <Compile Include="Operations\BroadcastBetRequest.cs" />
     <Compile Include="Operations\GameResultResponse.cs" />

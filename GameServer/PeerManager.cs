@@ -9,6 +9,21 @@ namespace Game
 {
     public class PeerManager
     {
+        private static PeerManager instance;
+
+        public static PeerManager Instance 
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new PeerManager();
+                }
+
+                return instance;
+            }
+        }
+
         protected Dictionary<int, GamePeer> peersDic;
         protected Dictionary<int, PeerInfo> peerInfosDic;
 
@@ -18,12 +33,7 @@ namespace Game
             peerInfosDic = new Dictionary<int, PeerInfo>();
         }
 
-        public void Setup()
-        {
-            
-        }
-
-        public void TearDown()
+        ~PeerManager()
         {
             peersDic.Clear();
             peerInfosDic.Clear();
@@ -55,6 +65,11 @@ namespace Game
             {
                 peerInfosDic.Remove(peer.ConnectionId);
             }
+        }
+
+        public PeerInfo GetPeerInfo(GamePeer peer)
+        {
+            return peerInfosDic.ContainsKey(peer.ConnectionId) ? peerInfosDic[peer.ConnectionId] : null;
         }
     }
 }

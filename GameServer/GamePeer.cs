@@ -56,6 +56,7 @@ namespace Game
 
         public void Leave()
         {
+            if (OnLeaveHandler == null) return;
             OnLeaveHandler(this);
         }
 
