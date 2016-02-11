@@ -12,11 +12,11 @@ namespace LobbyServer
 {
     public class ServerPeers
     {
-        public static ServerPeerBase barcarratPeer;
+        public static ServerPeerBase BaccaratPeer;
 
         public static void Setup(ApplicationBase server)
         {
-            server.ConnectToServerTcp(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 4520), "BarcarratServer", null);
+            server.ConnectToServerTcp(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 4520), "BaccaratServer", null);
         }
     }
 }

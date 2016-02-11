@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ProtoBuf;
+using Casino;
+
 namespace Game.Operations
 {
     [ProtoContract]
@@ -23,4 +25,12 @@ namespace Game.Operations
         [ProtoMember(3)]
         public int MaxPlayerCount;
     }
+
+    [ProtoContract]
+    public struct CardSet
+    {
+        [ProtoMember(1)]
+        public List<Card> cards;
+    }
 }
+

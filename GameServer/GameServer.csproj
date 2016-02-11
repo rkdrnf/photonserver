@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Card.cs" />
     <Compile Include="Operations\ChatRequest.cs" />
     <Compile Include="Operations\CommonOperationCode.cs" />
     <Compile Include="GameCore.cs" />

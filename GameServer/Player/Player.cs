@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Game.Game
+namespace Game
 {
     public class Player
     {
-        private PlayerKey key;
+        public GamePeer peer;
+        public PlayerKey key;
 
 
-        public Player(PlayerKey key)
+        public Player(GamePeer peer, PlayerKey key)
         {
+            this.peer = peer;
             this.key = key;
         }
     }

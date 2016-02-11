@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Game.Operations
 {
+    //128~255
+    public enum CommonParameterKey : byte
+    {
+        Success = 128
+    }
+
     public enum JoinParameterKey : byte
     {
         RoomID = 0
@@ -31,9 +36,19 @@ namespace Game.Operations
         RoomID = 0
     }
 
-    //128~255
-    public enum CommonParameterKey : byte
+    public enum SendBetParameterKey : byte
     {
-        Success = 128
+        BankerBet = 0,
+        PlayerBet = 1,
+        TieBet = 2
+    }
+
+    public enum BaccaratGameResultPK : byte
+    {
+        GameResult = 0,
+        BetMoney = 1,
+        MoneyDelta = 2,
+        PlayerCards = 3,
+        BankerCards = 4
     }
 }

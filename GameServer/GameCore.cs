@@ -33,7 +33,7 @@ namespace Game
             }
         }
 
-        public void HandleOperationRequest(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
+        public virtual void HandleOperationRequest(GamePeer peer, OperationRequest operationRequest, SendParameters sendParameters)
         {
             switch (operationRequest.OperationCode)
             {
@@ -179,7 +179,7 @@ namespace Game
             return roomProps;
         }
 
-        private GameRoom FindRoom(int roomID)
+        protected GameRoom FindRoom(int roomID)
         {
             if (roomsDic.ContainsKey(roomID)) {
                 return roomsDic[roomID];
@@ -187,7 +187,7 @@ namespace Game
             else return null;
         }
 
-        private GameRoom FindPeerRoom(GamePeer peer)
+        protected GameRoom FindPeerRoom(GamePeer peer)
         {
             foreach (var room in roomsDic.Values)
             {

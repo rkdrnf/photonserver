@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Game;
 using Photon.SocketServer;
-using Barcarrats;
+using Baccarats;
 
-    public class BarcarratServer : GameServer
+    public class BaccaratServer : GameServer
     {
         protected override PeerBase CreatePeer(InitRequest initRequest)
         {
@@ -16,7 +16,7 @@ using Barcarrats;
                 return new LobbyPeer(initRequest);
             }
 
-            return new BarcarratPeer(initRequest);
+            return new BaccaratPeer(initRequest);
         }
 
         protected override void Setup()
@@ -31,6 +31,6 @@ using Barcarrats;
 
         protected override void SetupServerManager()
         {
-            GameServerManager.gameCore = new BarcarratGameCore();
+            GameServerManager.gameCore = new BaccaratGameCore();
         }
     }

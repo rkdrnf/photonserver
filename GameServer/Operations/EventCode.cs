@@ -9,5 +9,6 @@ namespace Game.Operations
     public class EventCode
     {
         public const byte Chat = 2;
+        public const byte BaccaratBroadcastBet = 3;
     }
 }

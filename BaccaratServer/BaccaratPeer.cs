@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using Photon.SocketServer;
 using Game;
 
-namespace Barcarrats
+namespace Baccarats
 {
-    public class BarcarratPeer : GamePeer
+    public class BaccaratPeer : GamePeer
     {
-        public BarcarratPeer(InitRequest initRequest)
+        public BaccaratPeer(InitRequest initRequest)
             : base(initRequest)
         {
         }

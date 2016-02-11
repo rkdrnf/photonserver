@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Game.Game;
 using System.Collections;
 using Photon.SocketServer;
 using Photon.SocketServer.Rpc;
@@ -15,12 +14,12 @@ namespace Game
     public abstract class GameRoom : IDisposable
     {
         int id;
-        private Dictionary<PlayerKey, Player> playersDic;
+        protected Dictionary<PlayerKey, Player> playersDic;
 
         private static readonly int MAX_PLAYER_COUNT = 7;
 
-        private event Action<GamePeer, EventData, SendParameters> BroadcastMessage;
-        private readonly object syncRoot = new object();
+        protected event Action<GamePeer, EventData, SendParameters> BroadcastMessageHandler;
+        protected readonly object syncRoot = new object();
 
         public GameRoom(int id)
         {
@@ -31,6 +30,17 @@ namespace Game
         public int GetID()
         {
             return id;
+        }
+
+        public Player GetPlayer(GamePeer peer)
+        {
+            PlayerKey key = PlayerKey.MakeFromPeer(peer);
+            if (playersDic.ContainsKey(key))
+            {
+                return playersDic[key];
+            }
+
+            return null;
         }
 
         public bool HasPlayer(GamePeer peer)
@@ -72,9 +82,9 @@ namespace Game
                 PlayerKey pKey;
                 pKey.ID = peer.ConnectionId;
 
-                playersDic.Add(pKey, new Player(pKey));
+                playersDic.Add(pKey, new Player(peer, pKey));
 
-                BroadcastMessage += peer.OnBroadcastMessage;
+                BroadcastMessageHandler += peer.OnBroadcastMessage;
 
                 var response = new OperationResponse(CommonOperationCode.ConfirmJoin,
                 new Dictionary<byte, object> { { (byte)CommonParameterKey.Success, false },
@@ -107,7 +117,7 @@ namespace Game
 
                 playersDic.Remove(pKey);
 
-                BroadcastMessage -= peer.OnBroadcastMessage;
+                BroadcastMessageHandler -= peer.OnBroadcastMessage;
             }
 
             if (exitReq != null)
@@ -138,6 +148,11 @@ namespace Game
             prop.MaxPlayerCount = MAX_PLAYER_COUNT;
 
             return prop;
+        }
+
+        protected void BroadcastMessage(GamePeer peer, EventData eventData, SendParameters sendParameters)
+        {
+            BroadcastMessageHandler(peer, eventData, sendParameters);
         }
 
 

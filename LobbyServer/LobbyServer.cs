@@ -20,8 +20,8 @@ namespace LobbyServer
 
         protected override ServerPeerBase CreateServerPeer(InitResponse initResponse, object state)
         {
-            ServerPeers.barcarratPeer = new LobbyOutPeer(initResponse.Protocol, initResponse.PhotonPeer);
-            return ServerPeers.barcarratPeer;
+            ServerPeers.BaccaratPeer = new LobbyOutPeer(initResponse.Protocol, initResponse.PhotonPeer);
+            return ServerPeers.BaccaratPeer;
         }
 
         protected override void Setup()

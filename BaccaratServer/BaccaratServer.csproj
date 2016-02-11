@@ -7,8 +7,8 @@
     <ProjectGuid>{216A10FE-6C82-43B3-8753-B3AA90AB0F3B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Barcarrats</RootNamespace>
-    <AssemblyName>BarcarratServer</AssemblyName>
+    <RootNamespace>Baccarats</RootNamespace>
+    <AssemblyName>BaccaratServer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -55,10 +55,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BarcarratGameRoom.cs" />
-    <Compile Include="BarcarratGameCore.cs" />
-    <Compile Include="BarcarratPeer.cs" />
-    <Compile Include="BarcarratServer.cs" />
+    <Compile Include="BaccaratBet.cs" />
+    <Compile Include="BaccaratResult.cs" />
+    <Compile Include="BaccaratGameRoom.cs" />
+    <Compile Include="BaccaratGameCore.cs" />
+    <Compile Include="BaccaratPeer.cs" />
+    <Compile Include="BaccaratServer.cs" />
+    <Compile Include="Operations\SendBetRequest.cs" />
+    <Compile Include="Operations\BroadcastBetRequest.cs" />
+    <Compile Include="Operations\GameResultResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -69,7 +74,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)" "C:\Users\rkdrnf\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\deploy\BarcarratServer\bin\"</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetDir)" "C:\Users\rkdrnf\Desktop\photon\ExitGames-Photon-Server-SDK_v3-4-31-10808\deploy\BaccaratServer\bin\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
