@@ -22,4 +22,12 @@ namespace Casino
             TieBet = tieBet;
         }
     }
+
+    public enum SendBetPK : byte
+    {
+        Actor = 0,
+        BankerBet = 1,
+        PlayerBet = 2,
+        TieBet = 3
+    }
 }

@@ -135,6 +135,7 @@ namespace Baccarats
                 {
                     player.seat = seatNum;
                     seatsDic.Add(seatNum, player);
+                    return;
                 }
             }
         }
@@ -194,8 +195,9 @@ namespace Baccarats
 
         public override void RemovePlayer(GamePeer peer, ExitRequest exitReq, SendParameters sendParameters)
         {
-            Player player = playerManager.GetPlayer(peer);
+            BaccaratPlayer player = playerManager.GetPlayer(peer) as BaccaratPlayer;
             playersBetDic.Remove(player);
+            seatsDic.Remove(player.seat);
 
             base.RemovePlayer(peer, exitReq, sendParameters);
 

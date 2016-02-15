@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LobbyServer", "LobbyServer\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaccaratServer", "BaccaratServer\BaccaratServer.csproj", "{216A10FE-6C82-43B3-8753-B3AA90AB0F3B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackjackServer", "BlackjackServer\BlackjackServer.csproj", "{C14C2F98-2F70-40C8-A70A-276B9C5EC0E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{216A10FE-6C82-43B3-8753-B3AA90AB0F3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{216A10FE-6C82-43B3-8753-B3AA90AB0F3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{216A10FE-6C82-43B3-8753-B3AA90AB0F3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C14C2F98-2F70-40C8-A70A-276B9C5EC0E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C14C2F98-2F70-40C8-A70A-276B9C5EC0E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C14C2F98-2F70-40C8-A70A-276B9C5EC0E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C14C2F98-2F70-40C8-A70A-276B9C5EC0E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

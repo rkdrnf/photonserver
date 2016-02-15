@@ -7,10 +7,11 @@ using Game;
 using Photon.SocketServer;
 using Game.Operations;
 using Casino;
+using Blackjacks.Operations;
 
-namespace Baccarats
+namespace Blackjacks
 { 
-    public class BaccaratGameCore : GameCore
+    public class BlackjackGameCore : GameCore
     {
         public override void HandleOperationRequest(GamePeer gamePeer, OperationRequest operationRequest, SendParameters sendParameters)
         {
@@ -19,20 +20,36 @@ namespace Baccarats
 
             switch(operationRequest.OperationCode)
             {
-                case CommonOperationCode.BaccaratBet:
+                case CommonOperationCode.BlackjackBet:
                     HandleBetRequest(gamePeer, operationRequest, sendParameters);
                     break;
 
-                case CommonOperationCode.BaccaratBroadcastBet:
+                case CommonOperationCode.BlackjackBroadcastBet:
                     HandleBetBroadcastRequest(gamePeer, operationRequest, sendParameters);
+                    break;
+
+                case CommonOperationCode.BlackjackAction:
+                    HandleActionRequest(gamePeer, operationRequest, sendParameters);
                     break;
             }
 
         }
 
+        private void HandleActionRequest(GamePeer gamePeer, OperationRequest operationRequest, SendParameters sendParameters)
+        {
+            var room = FindPeerRoom(gamePeer) as BlackjackGameRoom;
+
+            var actionRequest = new ActionRequest(gamePeer.Protocol, operationRequest);
+
+            if (room != null)
+            {
+                room.OnPlayerAction(gamePeer, actionRequest);
+            }
+        }
+
         private void HandleBetRequest(GamePeer gamePeer, OperationRequest operationRequest, SendParameters sendParameters)
         {
-            var room = FindPeerRoom(gamePeer) as BaccaratGameRoom;
+            var room = FindPeerRoom(gamePeer) as BlackjackGameRoom;
 
             var sendBetRequest = new SendBetRequest(gamePeer.Protocol, operationRequest);
 
@@ -44,7 +61,7 @@ namespace Baccarats
 
         private void HandleBetBroadcastRequest(GamePeer gamePeer, OperationRequest operationRequest, SendParameters sendParameters)
         {
-            var room = FindPeerRoom(gamePeer) as BaccaratGameRoom;
+            var room = FindPeerRoom(gamePeer) as BlackjackGameRoom;
 
             var betBroadcast = new BroadcastBetRequest(gamePeer.Protocol, operationRequest);
 
@@ -59,15 +76,12 @@ namespace Baccarats
             base.Setup();
 
             roomsDic = new Dictionary<int, GameRoom>();
+            int minBet = 10;
+            int maxBet = 200;
             for (int i = 0; i < MAX_ROOM_COUNT; i++)
             {
-                roomsDic.Add(i, new BaccaratGameRoom(i));
+                roomsDic.Add(i, new BlackjackGameRoom(i, minBet, maxBet));
             }
-        }
-
-        public override void TearDown()
-        {
-            base.TearDown();
         }
     }
 }

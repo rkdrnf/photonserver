@@ -36,7 +36,7 @@ namespace Game
                 var values = new Dictionary<string, string>
                 {
                    { "username", userKey },
-                   { "money", money.ToString() }
+                   { "game_money", money.ToString() }
                 };
 
                 var content = new FormUrlEncodedContent(values);

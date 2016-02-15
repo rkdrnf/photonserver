@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace Game
 {
-    public class PlayerInfo
+    public abstract class GameLogic
     {
-        public string username { get; set; }
-        public int game_money { get; set; }
 
     }
 }

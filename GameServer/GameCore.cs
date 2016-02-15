@@ -24,7 +24,7 @@ namespace Game
         {
         }
 
-        public void TearDown()
+        public virtual void TearDown()
         {
             foreach (var room in roomsDic.Values)
             {
@@ -54,7 +54,6 @@ namespace Game
 
                 case CommonOperationCode.ConfirmJoin:
                     var task = HandleConfirmJoinOperation(peer, operationRequest, sendParameters);
-                    int x = 5;
                     task.Wait();
                     break;
             }
@@ -89,8 +88,8 @@ namespace Game
                 return;
             }
 
-            //string playerInfoStr = await WebHelper.RequestPlayerInfo(peer, joinRequest.UserKey);
-            string playerInfoStr = "{ \"username\": \"test\", \"money\": 2000 }";
+            //string playerInfoStr = await WebHelper.RequestPlayerInfo(joinRequest.UserKey);
+            string playerInfoStr = "{ \"username\": \"test\", \"game_money\": 2000 }";
 
             PlayerInfo info = JsonConvert.DeserializeObject<PlayerInfo>(playerInfoStr);
 

@@ -10,5 +10,9 @@
         public const byte BaccaratBet = 5;
         public const byte BaccaratGameResult = 6;
         public const byte BaccaratBroadcastBet = 7;
+        public const byte BlackjackAction = 8;
+        public const byte BlackjackBet = 9;
+        public const byte BlackjackBroadcastBet = 10;
+        public const byte BlackjackGameResult = 11;
     }
 }
